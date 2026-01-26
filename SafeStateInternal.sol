@@ -198,13 +198,13 @@ abstract contract SafeStateInternal {
         if (numPositions > MAX_PROTECTED_SLOTS) revert ArrayTooLarge(numPositions, MAX_PROTECTED_SLOTS);
     }  
 
-    function _getStorageArray(bytes32[] storage positions) private view returns (bytes32[] memory) {
+    function _getStorageArray(bytes32[] storage positions) private view returns (uint256[] memory) {
         uint256 numPositions = _getNumPositions(positions);
         _revertIfArrayTooLarge(numPositions);
-        bytes32[] memory valueArray = new bytes32[](numPositions);
+        uint256[] memory valueArray = new uint256[](numPositions);
         for (uint256 i = 0; i < numPositions; ) {
             bytes32 slot = positions[i];
-            bytes32 slotValue;
+            uint256 slotValue;
             assembly {
                 slotValue := sload(slot)
             }
@@ -268,58 +268,58 @@ abstract contract SafeStateInternal {
     }
    
     modifier invariantStorage(bytes32[] storage positions) {
-        bytes32[] memory beforeValueArray = _getStorageArray(positions);
+        uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
-        bytes32[] memory afterValueArray = _getStorageArray(positions);
+        uint256[] memory afterValueArray = _getStorageArray(positions);
         _processExpectedInvariantStorage(beforeValueArray, afterValueArray);
     }
 
     modifier expectedInvariantStorage(bytes32[] storage positions, uint256[] memory expectedInvariantArray) {
         _;
-        bytes32[] memory actualStorageArray = _getStorageArray(positions);
+        uint256[] memory actualStorageArray = _getStorageArray(positions);
         _processExpectedInvariantStorage(expectedInvariantArray, actualStorageArray);
     }
     
-    modifier exactIncreaseStorage(bytes32[] storage positions, bytes32[] memory exactIncreases) {
-        bytes32[] memory beforeValueArray = _getStorageArray(positions);
+    modifier exactIncreaseStorage(bytes32[] storage positions, uint256[] memory exactIncreaseArray) {
+        uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
-        bytes32[] memory afterValueArray = _getStorageArray(positions);
-        _processExactIncreaseStorage(beforeValueArray, afterValueArray);
+        uint256[] memory afterValueArray = _getStorageArray(positions);
+        _processExactIncreaseStorage(beforeValueArray, afterValueArray, exactIncreaseArray);
     }
 
-    modifier exactDecreaseStorage(bytes32[] storage positions, uint256[] memory exactIncreases) {
-        bytes32[] memory beforeValueArray = _getStorageArray(positions);
+    modifier exactDecreaseStorage(bytes32[] storage positions, uint256[] memory exactDecreaseArray) {
+        uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
-        bytes32[] memory afterValueArray = _getStorageArray(positions);
-        _processExactDecreaseStorage();
+        uint256[] memory afterValueArray = _getStorageArray(positions);
+        _processExactDecreaseStorage(beforeValueArray, afterValueArray, exactDecreaseArray);
     }
     
-    modifier maxIncreaseStorage(bytes32[] storage positions, uint256[] memory exactIncreases) {
-        bytes32[] memory beforeValueArray = _getStorageArray(positions);
+    modifier maxIncreaseStorage(bytes32[] storage positions, uint256[] memory maxIncreaseArray) {
+        uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
-        bytes32[] memory afterValueArray = _getStorageArray(positions);
-        _processMaxIncreaseStorage();
+        uint256[] memory afterValueArray = _getStorageArray(positions);
+        _processMaxIncreaseStorage(beforeValueArray, afterValueArray, maxIncreaseArray);
     }
     
-    modifier minIncreaseStorage(bytes32[] storage positions, uint256[] memory exactIncreases) {
-        bytes32[] memory beforeValueArray = _getStorageArray(positions);
+    modifier minIncreaseStorage(bytes32[] storage positions, uint256[] memory minIncreaseArray) {
+        uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
-        bytes32[] memory afterValueArray = _getStorageArray(positions);
-        _processMinIncreaseStorage();
+        uint256[] memory afterValueArray = _getStorageArray(positions);
+        _processMinIncreaseStorage(beforeValueArray, afterValueArray, minIncreaseArray);
     }
     
-    modifier maxDecreaseStorage(bytes32[] storage positions, uint256[] memory exactIncreases) {
-        bytes32[] memory beforeValueArray = _getStorageArray(positions);
+    modifier maxDecreaseStorage(bytes32[] storage positions, uint256[] memory maxDecreaseArray) {
+        uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
-        bytes32[] memory afterValueArray = _getStorageArray(positions);
-        _processMaxDecreaseStorage();
+        uint256[] memory afterValueArray = _getStorageArray(positions);
+        _processMaxDecreaseStorage(beforeValueArray, afterValueArray, maxDecreaseArray);
     }
     
     modifier minDecreaseStorage(bytes32[] storage positions, uint256[] memory minDecreaseArray) {
-        bytes32[] memory beforeValueArray = _getStorageArray(positions);
+        uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
-        bytes32[] memory afterValueArray = _getStorageArray(positions);
-        _processMinDecreaseStorage();
+        uint256[] memory afterValueArray = _getStorageArray(positions);
+        _processMinDecreaseStorage(beforeValueArray, afterValueArray, minDecreaseArray);
     }  
 
 /*
@@ -459,5 +459,6 @@ abstract contract SafeStateInternal {
 */
 
 }
+
 
 

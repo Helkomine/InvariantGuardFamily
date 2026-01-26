@@ -247,7 +247,7 @@ abstract contract SafeStateInternal {
         if (errorAccumulator > 0) revert InvariantViolationStorage(errorArray);
     }
 
-    function _processMaxIncreaseStorage(uint256[] memory beforeValueArray, uint25[] memory afterValueArray, uint256[] memory maxIncreaseArray) private pure {
+    function _processMaxIncreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory maxIncreaseArray) private pure {
         (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, maxIncreaseArray, ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationStorage(errorArray);
     }
@@ -459,6 +459,7 @@ abstract contract SafeStateInternal {
 */
 
 }
+
 
 
 

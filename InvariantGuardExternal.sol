@@ -34,5 +34,5 @@ abstract contract InvariantGuardExternal {
 
 // -------- ERC721 BALANCE ----------
 
-// ERC721 APPROVAL 
+// -------- ERC721 APPROVAL ----------
 }

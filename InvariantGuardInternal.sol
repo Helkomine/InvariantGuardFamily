@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 /**
  * @title InvariantGuardInternal
- * @author —
+ * @author Helkomine
  *
  * @notice
  * Abstract contract providing a set of modifiers to enforce state invariants
@@ -557,3 +557,4 @@ abstract contract InvariantGuardInternal {
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 }
+

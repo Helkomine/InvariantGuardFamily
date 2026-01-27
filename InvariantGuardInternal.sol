@@ -77,25 +77,25 @@ abstract contract InvariantGuardInternal {
         return address(this).balance;
     }
 
-    function _processInvariance(uint256 beforeValue, uint256 afterValue, uint256 expectedDelta, ValidateSelector selector) private pure returns (bool) {
-        if (selector == ValidateSelector.IS_CONSTANT_VALUE_AND_DELTA_EQUAL) {
+    function _processInvariance(uint256 beforeValue, uint256 afterValue, uint256 expectedDelta, DeltaRule selector) private pure returns (bool) {
+        if (selector == DeltaRule.IS_CONSTANT_VALUE_AND_DELTA_EQUAL) {
             return beforeValue == afterValue;
-        } else if (selector == ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_EQUAL) {
+        } else if (selector == DeltaRule.IS_INCREASE_VALUE_AND_DELTA_EQUAL) {
             uint256 delta = afterValue - beforeValue;
             return delta == expectedDelta;
-        } else if (selector == ValidateSelector.IS_DECREASE_VALUE_AND_DELTA_EQUAL) {
+        } else if (selector == DeltaRule.IS_DECREASE_VALUE_AND_DELTA_EQUAL) {
             uint256 delta = beforeValue - afterValue;
             return delta == expectedDelta;
-        } else if (selector == ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL) {
+        } else if (selector == DeltaRule.IS_INCREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL) {
             uint256 delta = afterValue - beforeValue;
             return delta <= expectedDelta;
-        } else if (selector == ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL) {
+        } else if (selector == DeltaRule.IS_INCREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL) {
             uint256 delta = afterValue - beforeValue;
             return delta >= expectedDelta;
-        } else if (selector == ValidateSelector.IS_DECREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL) {
+        } else if (selector == DeltaRule.IS_DECREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL) {
             uint256 delta = beforeValue - afterValue;
             return delta <= expectedDelta;
-        } else if (selector == ValidateSelector.IS_DECREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL) {
+        } else if (selector == DeltaRule.IS_DECREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL) {
             uint256 delta = beforeValue - afterValue;
             return delta >= expectedDelta;     
         } else {
@@ -104,31 +104,31 @@ abstract contract InvariantGuardInternal {
     }
 
     function _processExpectedInvariantBalance(uint256 beforeBalance, uint256 afterBalance) private pure {
-        if (!_processInvariance(beforeBalance, afterBalance, 0, ValidateSelector.IS_CONSTANT_VALUE_AND_DELTA_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, 0));
+        if (!_processInvariance(beforeBalance, afterBalance, 0, DeltaRule.IS_CONSTANT_VALUE_AND_DELTA_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, 0));
     }
 
     function _processExactIncreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 exactIncrease) private pure {
-        if (!_processInvariance(beforeBalance, afterBalance, exactIncrease, ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, exactIncrease));   
+        if (!_processInvariance(beforeBalance, afterBalance, exactIncrease, DeltaRule.IS_INCREASE_VALUE_AND_DELTA_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, exactIncrease));   
     }
 
     function _processExactDecreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 exactDecrease) private pure {
-        if (!_processInvariance(beforeBalance, afterBalance, exactDecrease, ValidateSelector.IS_DECREASE_VALUE_AND_DELTA_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, exactDecrease));   
+        if (!_processInvariance(beforeBalance, afterBalance, exactDecrease, DeltaRule.IS_DECREASE_VALUE_AND_DELTA_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, exactDecrease));   
     }
 
     function _processMaxIncreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 maxIncrease) private pure {       
-        if (!_processInvariance(beforeBalance, afterBalance, maxIncrease, ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, maxIncrease));   
+        if (!_processInvariance(beforeBalance, afterBalance, maxIncrease, DeltaRule.IS_INCREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, maxIncrease));   
     }
 
     function _processMinIncreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 minIncrease) private pure {     
-        if (!_processInvariance(beforeBalance, afterBalance, minIncrease, ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, minIncrease));      
+        if (!_processInvariance(beforeBalance, afterBalance, minIncrease, DeltaRule.IS_INCREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, minIncrease));      
     }
 
     function _processMaxDecreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 maxDecrease) private pure {             
-        if (!_processInvariance(beforeBalance, afterBalance, maxDecrease, ValidateSelector.IS_DECREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, maxDecrease));
+        if (!_processInvariance(beforeBalance, afterBalance, maxDecrease, DeltaRule.IS_DECREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, maxDecrease));
     }
 
     function _processMinDecreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 minIncrease) private pure {
-        if (!_processInvariance(beforeBalance, afterBalance, minIncrease, ValidateSelector.IS_DECREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, minIncrease));
+        if (!_processInvariance(beforeBalance, afterBalance, minIncrease, DeltaRule.IS_DECREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, minIncrease));
     }
 
     modifier invariantBalance() {
@@ -211,7 +211,7 @@ abstract contract InvariantGuardInternal {
         return valueArray;
     }    
     
-    function _processArray(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory expectedDeltaArray, ValidateSelector selector) private pure returns (uint256, ValuePerPosition[] memory) {
+    function _processArray(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory expectedDeltaArray, DeltaRule selector) private pure returns (uint256, ValuePerPosition[] memory) {
         uint256 length = expectedDeltaArray.length;
         _revertIfArrayTooLarge(length);
         if (beforeValueArray.length != length || afterValueArray.length != length) revert LengthMismatch();
@@ -230,37 +230,37 @@ abstract contract InvariantGuardInternal {
     }        
    
     function _processExpectedInvariantStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, new uint256[](beforeValueArray.length), ValidateSelector.IS_CONSTANT_VALUE_AND_DELTA_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, new uint256[](beforeValueArray.length), DeltaRule.IS_CONSTANT_VALUE_AND_DELTA_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationStorage(errorArray); 
     }
 
     function _processExactIncreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory exactIncreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, exactIncreaseArray, ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, exactIncreaseArray, DeltaRule.IS_INCREASE_VALUE_AND_DELTA_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationStorage(errorArray);
     }
 
     function _processExactDecreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory exactDecreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, exactDecreaseArray, ValidateSelector.IS_DECREASE_VALUE_AND_DELTA_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, exactDecreaseArray, DeltaRule.IS_DECREASE_VALUE_AND_DELTA_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationStorage(errorArray);
     }
 
     function _processMaxIncreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory maxIncreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, maxIncreaseArray, ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, maxIncreaseArray, DeltaRule.IS_INCREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationStorage(errorArray);
     }
 
     function _processMinIncreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory minIncreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, minIncreaseArray, ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, minIncreaseArray, DeltaRule.IS_INCREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationStorage(errorArray);
     }
 
     function _processMaxDecreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory maxDecreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, maxDecreaseArray, ValidateSelector.IS_DECREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, maxDecreaseArray, DeltaRule.IS_DECREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationStorage(errorArray);
     }
 
     function _processMinDecreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory minDecreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, minDecreaseArray, ValidateSelector.IS_DECREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, minDecreaseArray, DeltaRule.IS_DECREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationStorage(errorArray);
     }
    

@@ -1,19 +1,58 @@
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.20;
+/**
+ * @title InvariantGuardInternal
+ * @author —
+ *
+ * @notice
+ * Abstract contract providing a set of modifiers to enforce state invariants
+ * based on explicitly specified positions.
+ *
+ * @dev
+ * Supported invariant categories:
+ * - Code hash (contract bytecode immutability)
+ * - Balance (ETH balance of the contract)
+ * - Storage (explicit storage slots)
+ * - Transient Storage (EIP-1153)
+ *
+ * Not supported:
+ * - Nonce (currently reverts with UnsupportedInvariant)
+ *
+ * ⚠️ Important notes:
+ * - Storage and Transient Storage invariants CANNOT protect mappings or
+ *   dynamic arrays unless their exact storage slots are explicitly provided.
+ * - For arrays or complex structures, callers must manually derive and pass
+ *   the list of storage slot positions (bytes32[]).
+ * - Callers must pass pointers (slot lists), NOT high-level Solidity types.
+ *
+ * This contract is designed as an "Invariant DSL" (domain-specific language):
+ * - Modifiers act as the public invariant interface.
+ * - All validation logic is implemented in private utility functions.
+ */
 abstract contract InvariantGuardInternal {
-    uint256 constant MAX_PROTECTED_SLOTS  = 0xffff;
+     /**
+     * @notice Maximum number of slots that can be protected in a single invariant check
+     * @dev Prevents out-of-gas and griefing attacks
+     */
+    uint256 private constant MAX_PROTECTED_SLOTS  = 0xffff;
+
+     /**
+     * @notice Rules describing how before/after deltas are validated
+     */
     enum DeltaRule {
-        CONSTANT,
-        INCREASE_EXACT, 
-        DECREASE_EXACT,
-        INCREASE_MAX, 
-        INCREASE_MIN, 
-        DECREASE_MAX,
-        DECREASE_MIN 
+        CONSTANT,         // before == after
+        INCREASE_EXACT,   // after - before == delta
+        DECREASE_EXACT,   // before - after == delta
+        INCREASE_MAX,     // after - before <= delta
+        INCREASE_MIN,     // after - before >= delta
+        DECREASE_MAX,     // before - after <= delta
+        DECREASE_MIN      // before - after >= delta  
     }
+
+
     struct CodeInvariant {
-        bytes32 beforeHash;
-        bytes32 afterHash;
+        bytes32 beforeCodeHash;
+        bytes32 afterCodeHash;
     }
     struct ValuePerPosition {
         uint256 beforeValue;
@@ -455,3 +494,4 @@ abstract contract InvariantGuardInternal {
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 }
+

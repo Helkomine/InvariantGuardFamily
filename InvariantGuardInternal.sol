@@ -78,9 +78,9 @@ abstract contract InvariantGuardInternal {
     }
 
     function _processInvariance(uint256 beforeValue, uint256 afterValue, uint256 expectedDelta, DeltaRule selector) private pure returns (bool) {
-        if (selector == DeltaRule.IS_CONSTANT_VALUE_AND_DELTA_EQUAL) {
+        if (selector == DeltaRule.CONSTANT) {
             return beforeValue == afterValue;
-        } else if (selector == DeltaRule.IS_INCREASE_VALUE_AND_DELTA_EQUAL) {
+        } else if (selector == DeltaRule.INCREASE_EXACT) {
             uint256 delta = afterValue - beforeValue;
             return delta == expectedDelta;
         } else if (selector == DeltaRule.DECREASE_EXACT) {
@@ -430,3 +430,4 @@ abstract contract InvariantGuardInternal {
         _processMinDecreaseTransientStorage(beforeValueArray, afterValueArray, minDecreaseArray);
     }  
 }
+

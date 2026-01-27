@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.20;
-abstract contract SafeStateInternal {
+abstract contract InvariantGuardInternal {
     uint256 constant MAX_PROTECTED_SLOTS  = 0xffff;
     enum ValidateSelector {
         IS_CONSTANT_VALUE_AND_DELTA_EQUAL,

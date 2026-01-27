@@ -3,8 +3,8 @@ pragma solidity ^0.8.20;
 abstract contract InvariantGuardInternal {
     uint256 constant MAX_PROTECTED_SLOTS  = 0xffff;
     enum DeltaRule {
-        IS_CONSTANT_VALUE_AND_DELTA_EQUAL,
-        IS_INCREASE_VALUE_AND_DELTA_EQUAL, 
+        CONSTANT,
+        INCREASE_EXACT, 
         IS_DECREASE_VALUE_AND_DELTA_EQUAL,
         IS_INCREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL, 
         IS_INCREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL, 
@@ -104,11 +104,11 @@ abstract contract InvariantGuardInternal {
     }
 
     function _processExpectedInvariantBalance(uint256 beforeBalance, uint256 afterBalance) private pure {
-        if (!_processInvariance(beforeBalance, afterBalance, 0, DeltaRule.IS_CONSTANT_VALUE_AND_DELTA_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, 0));
+        if (!_processInvariance(beforeBalance, afterBalance, 0, DeltaRule.CONSTANT)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, 0));
     }
 
     function _processExactIncreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 exactIncrease) private pure {
-        if (!_processInvariance(beforeBalance, afterBalance, exactIncrease, DeltaRule.IS_INCREASE_VALUE_AND_DELTA_EQUAL)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, exactIncrease));   
+        if (!_processInvariance(beforeBalance, afterBalance, exactIncrease, DeltaRule.INCREASE_EXACT)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, exactIncrease));   
     }
 
     function _processExactDecreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 exactDecrease) private pure {
@@ -230,12 +230,13 @@ abstract contract InvariantGuardInternal {
     }        
    
     function _processExpectedInvariantStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, new uint256[](beforeValueArray.length), DeltaRule.IS_CONSTANT_VALUE_AND_DELTA_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, new uint256[](beforeValueArray.length), DeltaRule.CONSTANT);
         if (errorAccumulator > 0) revert InvariantViolationStorage(errorArray); 
     }
 
     function _processExactIncreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory exactIncreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, exactIncreaseArray, DeltaRule.IS_INCREASE_VALUE_AND_DELTA_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, exactIncreaseArray, DeltaRule.INCREASE_EXACT
+);
         if (errorAccumulator > 0) revert InvariantViolationStorage(errorArray);
     }
 
@@ -341,12 +342,12 @@ abstract contract InvariantGuardInternal {
     }    
                
     function _processExpectedInvariantTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, new uint256[](beforeValueArray.length), DeltaRule.IS_CONSTANT_VALUE_AND_DELTA_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, new uint256[](beforeValueArray.length), DeltaRule.CONSTANT);
         if (errorAccumulator > 0) revert InvariantViolationTransientStorage(errorArray); 
     }
 
     function _processExactIncreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory exactIncreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, exactIncreaseArray, DeltaRule.IS_INCREASE_VALUE_AND_DELTA_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, exactIncreaseArray, DeltaRule.INCREASE_EXACT);
         if (errorAccumulator > 0) revert InvariantViolationTransientStorage(errorArray);
     }
 
@@ -430,3 +431,4 @@ abstract contract InvariantGuardInternal {
         _processMinDecreaseTransientStorage(beforeValueArray, afterValueArray, minDecreaseArray);
     }  
 }
+

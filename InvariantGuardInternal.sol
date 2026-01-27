@@ -395,7 +395,6 @@ abstract contract InvariantGuardInternal {
         return (violationCount, violations);
     } 
 
-// ---- CODE UTILS ----
     function _getCodeHash() private view returns (bytes32) {
         bytes32 codeHash;
         assembly {
@@ -408,7 +407,6 @@ abstract contract InvariantGuardInternal {
         if (beforeCodeHash != afterCodeHash) revert InvariantViolationCode(CodeInvariant(beforeCodeHash, afterCodeHash));
     } 
 
-// ---- BALANCE UTILS ----
     function _getBalance() private view returns (uint256) {
         return address(this).balance;
     }
@@ -559,4 +557,3 @@ abstract contract InvariantGuardInternal {
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 }
-

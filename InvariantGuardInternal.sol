@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 abstract contract InvariantGuardInternal {
     uint256 constant MAX_PROTECTED_SLOTS  = 0xffff;
-    enum ValidateSelector {
+    enum DeltaRule {
         IS_CONSTANT_VALUE_AND_DELTA_EQUAL,
         IS_INCREASE_VALUE_AND_DELTA_EQUAL, 
         IS_DECREASE_VALUE_AND_DELTA_EQUAL,
@@ -18,7 +18,7 @@ abstract contract InvariantGuardInternal {
     }  
     error LengthMismatch();
     error UnsupportedInvariant();  
-    error WrongErrorConfiguration(ValidateSelector errorOption);
+    error WrongErrorConfiguration(DeltaRule errorOption);
     error ArrayTooLarge(uint256 length, uint256 maxLength);
     error InvariantViolationCode(bytes32 beforeCodeHash, bytes32 afterCodeHash);
     error InvariantViolationNonce(ValuePerPosition noncePerPosition);

@@ -162,7 +162,7 @@ abstract contract InvariantGuardInternal {
         _processExactIncreaseBalance(beforeBalance, afterBalance, exactIncrease);      
     }
 
-/**
+    /**
      * @notice Ensures the contract balance decreases by an exact amount
      */
     modifier exactDecreaseBalance(uint256 exactDecrease) {
@@ -559,3 +559,4 @@ abstract contract InvariantGuardInternal {
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 }
+

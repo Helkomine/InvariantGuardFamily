@@ -141,6 +141,8 @@ abstract contract InvariantGuardExternal {
         return account.balance;
     }
 
+    function _
+
     modifier invariantExtETHBalance(address account) {
         uint256 beforeBalance = _getExtETHBalance(account);
         _;

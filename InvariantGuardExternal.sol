@@ -141,18 +141,33 @@ abstract contract InvariantGuardExternal {
         return account.balance;
     }
 
-    function _
-
-    modifier invariantExtETHBalance(address account) {
-        uint256 beforeBalance = _getExtETHBalance(account);
-        _;
-        uint256 afterBalance = _getExtETHBalance(account);
-        InvariantGuardHelper._processConstantBalance(beforeBalance, afterBalance);
+    function _getExtETHBalanceArray(address[] memory accounts) private view returns (uint256[] memory) {
+        uint256 length = accounts.length;
+        uint256[] memory balanceArray = new uint256[](length);
+        for (uint256 i = 0 ; i < length ; ) {
+            balanceArray[i] = _getExtETHBalance(accounts[i]);
+        }
+        return balanceArray;
     }
 
-    modifier assertExtETHBalanceEquals(address account, uint256 expected) {
+    function _processConstantExtETHBalance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray) private view {
+        uint256 length = afterBalanceArray.length;
+        if (beforeBalanceArray.length != length) revert LengthMismatch();
+        for (uint256 i = 0 ; i < length ; ) {
+            InvariantGuardHelper.    
+        }
+    }
+
+    modifier invariantExtETHBalance(address[] memory account) {
+        uint256[] memory beforeBalanceArray = _getExtETHBalanceArray(accounts);
         _;
-        uint256 actualBalance = _getExtETHBalance(account);
+        uint256[] memory afterBalanceArray = _getExtETHBalanceArray(accounts);
+        InvariantGuardHelper._processConstantBalance(beforeBalanceArray, afterBalanceArray);
+    }
+
+    modifier assertExtETHBalanceEquals(address[] memory account, uint256[] memory expected) {
+        _;
+        uint256[] memory actualBalanceArray = _getExtETHBalance(account);
         InvariantGuardHelper._processConstantBalance(expected, actualBalance);
     }
 

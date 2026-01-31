@@ -39,15 +39,16 @@ abstract contract InvariantGuardInternal {
     /**
      * @notice Rules describing how before/after deltas are validated
      */
-    enum DeltaRule {
-        CONSTANT,         // before == after
+    enum DeltaConstraint {
+        NO_CHANGE,         // before == after
         INCREASE_EXACT,   // after - before == delta
-        DECREASE_EXACT,   // before - after == elta
         INCREASE_MAX,     // after - before <= delta
         INCREASE_MIN,     // after - before >= delta
+        DECREASE_EXACT,   // before - after == delta
         DECREASE_MAX,     // before - after <= delta
         DECREASE_MIN      // before - after >= delta  
     }
+
 
     /**
      * @notice Snapshot of contract bytecode hash before and after execution
@@ -73,7 +74,7 @@ abstract contract InvariantGuardInternal {
     error UnsupportedInvariant();  
 
     /// @notice Invalid or unsupported DeltaRule
-    error InvalidDeltaRule(DeltaRule deltaRule);
+    error InvalidDeltaConstraint(DeltaConstraint deltaConstraint);
 
     /// @notice Too many slots requested for invariant protection
     error ArrayTooLarge(uint256 length, uint256 maxLength);
@@ -322,13 +323,17 @@ abstract contract InvariantGuardInternal {
     }  
 
     
-    function _emptyDelta(uint256 length) private pure returns (uint256[] memory) {
+    function _emptyArray(uint256 length) private pure returns (uint256[] memory) {
         return new uint256[](length);
     }
     
-    function _getPositionsLength(bytes32[] memory positions) private pure returns (uint256) {
-        return positions.length;
+    function _getBytes32ArrayLength(bytes32[] memory bytes32Array) private pure returns (uint256) {
+        return bytes32Array.length;
     } 
+
+    function _getUint256ArrayLength(uint256[] memory uint256Array) private pure returns (uint256) {
+        return uint256Array.length;
+    }
 
     function _revertIfArrayTooLarge(uint256 numPositions) private pure {
         if (numPositions > MAX_PROTECTED_SLOTS) revert ArrayTooLarge(numPositions, MAX_PROTECTED_SLOTS);
@@ -338,41 +343,41 @@ abstract contract InvariantGuardInternal {
      * @notice Validates a before/after delta using a DeltaRule
      * @return True if the invariant holds, false otherwise
      */
-    function _validateDeltaRule(uint256 beforeValue, uint256 afterValue, uint256 expectedDelta, DeltaRule deltaRule) private pure returns (bool) {
-        if (deltaRule == DeltaRule.CONSTANT) {
-            return beforeValue == afterValue;
-        } else if (deltaRule == DeltaRule.INCREASE_EXACT) {
-            if (afterValue < beforeValue) return false;
+    function _isDeltaViolation(uint256 beforeValue, uint256 afterValue, uint256 expectedDelta, DeltaConstraint deltaConstraint) private pure returns (bool) {
+        if (deltaConstraint == DeltaConstraint.NO_CHANGE) {
+            return beforeValue != afterValue;
+        } else if (deltaConstraint == DeltaConstraint.INCREASE_EXACT) {
+            if (afterValue < beforeValue) return true;
             unchecked {
-                return afterValue - beforeValue == expectedDelta;
+                return afterValue - beforeValue != expectedDelta;
             }
-        } else if (deltaRule == DeltaRule.DECREASE_EXACT) {
-            if (beforeValue < afterValue) return false;
+        } else if (deltaConstraint == DeltaConstraint.INCREASE_MAX) {
+            if (afterValue < beforeValue) return true;
             unchecked {
-                return beforeValue - afterValue == expectedDelta;
+                return afterValue - beforeValue > expectedDelta;
             }
-        } else if (deltaRule == DeltaRule.INCREASE_MAX) {
-            if (afterValue < beforeValue) return false;
+        } else if (deltaConstraint == DeltaConstraint.INCREASE_MIN) {
+            if (afterValue < beforeValue) return true;
             unchecked {
-                return afterValue - beforeValue <= expectedDelta;
+                return afterValue - beforeValue < expectedDelta;
             }
-        } else if (deltaRule == DeltaRule.INCREASE_MIN) {
-            if (afterValue < beforeValue) return false;
+        } else if (deltaConstraint == DeltaConstraint.DECREASE_EXACT) {
+            if (beforeValue < afterValue) return true;
             unchecked {
-                return afterValue - beforeValue >= expectedDelta;
+                return beforeValue - afterValue != expectedDelta;
             }
-        } else if (deltaRule == DeltaRule.DECREASE_MAX) {
-            if (beforeValue < afterValue) return false;
+        } else if (deltaConstraint == DeltaConstraint.DECREASE_MAX) {
+            if (beforeValue < afterValue) return true;
             unchecked {
-                return beforeValue - afterValue <= expectedDelta;
+                return beforeValue - afterValue > expectedDelta;
             }
-        } else if (deltaRule == DeltaRule.DECREASE_MIN) {
-            if (beforeValue < afterValue) return false;
+        } else if (deltaConstraint == DeltaConstraint.DECREASE_MIN) {
+            if (beforeValue < afterValue) return true;
             unchecked {
-                return beforeValue - afterValue >= expectedDelta;
+                return beforeValue - afterValue < expectedDelta;
             }     
         } else {
-            revert InvalidDeltaRule(deltaRule);
+            revert InvalidDeltaConstraint(deltaConstraint);
         }
     }
 
@@ -381,15 +386,15 @@ abstract contract InvariantGuardInternal {
      * @return violationCount Number of invariant violations
      * @return violations Detailed per-position violations
      */
-    function _validateDeltaArray(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory expectedDeltaArray, DeltaRule deltaRule) private pure returns (uint256, ValuePerPosition[] memory) {
-        uint256 length = expectedDeltaArray.length;
+    function _validateDeltaArray(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory expectedDeltaArray, DeltaConstraint deltaConstraint) private pure returns (uint256, ValuePerPosition[] memory) {
+        uint256 length = _getUint256ArrayLength(expectedDeltaArray);
         _revertIfArrayTooLarge(length);
-        if (beforeValueArray.length != length || afterValueArray.length != length) revert LengthMismatch();
+        if (_getUint256ArrayLength(beforeValueArray) != length || _getUint256ArrayLength(afterValueArray) != length) revert LengthMismatch();
         bool valueMismatch;       
         uint256 violationCount;
         ValuePerPosition[] memory violations = new ValuePerPosition[](length);
         for (uint256 i = 0 ; i < length ; ) {            
-            valueMismatch = !_validateDeltaRule(beforeValueArray[i], afterValueArray[i], expectedDeltaArray[i], deltaRule);
+            valueMismatch = _isDeltaViolation(beforeValueArray[i], afterValueArray[i], expectedDeltaArray[i], deltaConstraint);
             assembly {
                 violationCount := add(violationCount, valueMismatch)
             }
@@ -416,31 +421,31 @@ abstract contract InvariantGuardInternal {
     }
 
     function _processConstantBalance(uint256 beforeBalance, uint256 afterBalance) private pure {
-        if (!_validateDeltaRule(beforeBalance, afterBalance, 0, DeltaRule.CONSTANT)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, 0));
+        if (_isDeltaViolation(beforeBalance, afterBalance, 0, DeltaConstraint.NO_CHANGE)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, 0));
     }
 
     function _processExactIncreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 exactIncrease) private pure {
-        if (!_validateDeltaRule(beforeBalance, afterBalance, exactIncrease, DeltaRule.INCREASE_EXACT)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, exactIncrease));   
+        if (_isDeltaViolation(beforeBalance, afterBalance, exactIncrease, DeltaConstraint.INCREASE_EXACT)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, exactIncrease));   
     }
 
     function _processExactDecreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 exactDecrease) private pure {
-        if (!_validateDeltaRule(beforeBalance, afterBalance, exactDecrease, DeltaRule.DECREASE_EXACT)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, exactDecrease));   
+        if (_isDeltaViolation(beforeBalance, afterBalance, exactDecrease, DeltaConstraint.DECREASE_EXACT)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, exactDecrease));   
     }
 
     function _processMaxIncreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 maxIncrease) private pure {       
-        if (!_validateDeltaRule(beforeBalance, afterBalance, maxIncrease, DeltaRule.INCREASE_MAX)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, maxIncrease));   
+        if (_isDeltaViolation(beforeBalance, afterBalance, maxIncrease, DeltaConstraint.INCREASE_MAX)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, maxIncrease));   
     }
 
     function _processMinIncreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 minIncrease) private pure {     
-        if (!_validateDeltaRule(beforeBalance, afterBalance, minIncrease, DeltaRule.INCREASE_MIN)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, minIncrease));      
+        if (_isDeltaViolation(beforeBalance, afterBalance, minIncrease, DeltaConstraint.INCREASE_MIN)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, minIncrease));      
     }
 
     function _processMaxDecreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 maxDecrease) private pure {             
-        if (!_validateDeltaRule(beforeBalance, afterBalance, maxDecrease, DeltaRule.DECREASE_MAX)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, maxDecrease));
+        if (_isDeltaViolation(beforeBalance, afterBalance, maxDecrease, DeltaConstraint.DECREASE_MAX)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, maxDecrease));
     }
 
     function _processMinDecreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 minDecrease) private pure {
-        if (!_validateDeltaRule(beforeBalance, afterBalance, minDecrease, DeltaRule.DECREASE_MIN)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, minDecrease));
+        if (_isDeltaViolation(beforeBalance, afterBalance, minDecrease, DeltaConstraint.DECREASE_MIN)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, minDecrease));
     }
 
     /**
@@ -448,7 +453,7 @@ abstract contract InvariantGuardInternal {
      * @dev Uses raw sload via assembly
      */
     function _getStorageArray(bytes32[] memory positions) private view returns (uint256[] memory) {
-        uint256 numPositions = _getPositionsLength(positions);
+        uint256 numPositions = _getBytes32ArrayLength(positions);
         _revertIfArrayTooLarge(numPositions);
         uint256[] memory valueArray = new uint256[](numPositions);
         for (uint256 i = 0; i < numPositions; ) {
@@ -464,37 +469,37 @@ abstract contract InvariantGuardInternal {
     }          
    
     function _processConstantStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, _emptyDelta(beforeValueArray.length), DeltaRule.CONSTANT);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, _emptyArray(_getUint256ArrayLength(beforeValueArray)), DeltaConstraint.NO_CHANGE);
         if (violationCount > 0) revert InvariantViolationStorage(violations); 
     }
 
     function _processExactIncreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory exactIncreaseArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, exactIncreaseArray, DeltaRule.INCREASE_EXACT);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, exactIncreaseArray, DeltaConstraint.INCREASE_EXACT);
         if (violationCount > 0) revert InvariantViolationStorage(violations);
     }
 
     function _processExactDecreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory exactDecreaseArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, exactDecreaseArray, DeltaRule.DECREASE_EXACT);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, exactDecreaseArray, DeltaConstraint.DECREASE_EXACT);
         if (violationCount > 0) revert InvariantViolationStorage(violations);
     }
 
     function _processMaxIncreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory maxIncreaseArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, maxIncreaseArray, DeltaRule.INCREASE_MAX);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, maxIncreaseArray, DeltaConstraint.INCREASE_MAX);
         if (violationCount > 0) revert InvariantViolationStorage(violations);
     }
 
     function _processMinIncreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory minIncreaseArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, minIncreaseArray, DeltaRule.INCREASE_MIN);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, minIncreaseArray, DeltaConstraint.INCREASE_MIN);
         if (violationCount > 0) revert InvariantViolationStorage(violations);
     }
 
     function _processMaxDecreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory maxDecreaseArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, maxDecreaseArray, DeltaRule.DECREASE_MAX);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, maxDecreaseArray, DeltaConstraint.DECREASE_MAX);
         if (violationCount > 0) revert InvariantViolationStorage(violations);
     }
 
     function _processMinDecreaseStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory minDecreaseArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, minDecreaseArray, DeltaRule.DECREASE_MIN);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, minDecreaseArray, DeltaConstraint.DECREASE_MIN);
         if (violationCount > 0) revert InvariantViolationStorage(violations);
     }
 
@@ -503,7 +508,7 @@ abstract contract InvariantGuardInternal {
      * @dev Uses `TLOAD` (EIP-1153)
      */
     function _getTransientStorageArray(bytes32[] memory positions) private view returns (uint256[] memory) {
-        uint256 numPositions = _getPositionsLength(positions);
+        uint256 numPositions = _getBytes32ArrayLength(positions);
         _revertIfArrayTooLarge(numPositions);
         uint256[] memory valueArray = new uint256[](numPositions);
         for (uint256 i = 0; i < numPositions; ) {
@@ -519,37 +524,37 @@ abstract contract InvariantGuardInternal {
     }    
                
     function _processConstantTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, _emptyDelta(beforeValueArray.length), DeltaRule.CONSTANT);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, _emptyArray(_getUint256ArrayLength(beforeValueArray)), DeltaConstraint.NO_CHANGE);
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations); 
     }
 
     function _processExactIncreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory exactIncreaseArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, exactIncreaseArray, DeltaRule.INCREASE_EXACT);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, exactIncreaseArray, DeltaConstraint.INCREASE_EXACT);
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 
     function _processExactDecreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory exactDecreaseArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, exactDecreaseArray, DeltaRule.DECREASE_EXACT);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, exactDecreaseArray, DeltaConstraint.DECREASE_EXACT);
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 
     function _processMaxIncreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory maxIncreaseArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, maxIncreaseArray, DeltaRule.INCREASE_MAX);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, maxIncreaseArray, DeltaConstraint.INCREASE_MAX);
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 
     function _processMinIncreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory minIncreaseArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, minIncreaseArray, DeltaRule.INCREASE_MIN);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, minIncreaseArray, DeltaConstraint.INCREASE_MIN);
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 
     function _processMaxDecreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory maxDecreaseArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, maxDecreaseArray, DeltaRule.DECREASE_MAX);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, maxDecreaseArray, DeltaConstraint.DECREASE_MAX);
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 
     function _processMinDecreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory minDecreaseArray) private pure {
-        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, minDecreaseArray, DeltaRule.DECREASE_MIN);
+        (uint256 violationCount, ValuePerPosition[] memory violations) = _validateDeltaArray(beforeValueArray, afterValueArray, minDecreaseArray, DeltaConstraint.DECREASE_MIN);
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 }

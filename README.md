@@ -41,4 +41,7 @@ This library provides invariant-based enforcement for:
 
 
 Giúp việc thực hiện DELEGATECALL trở nên an toàn hơn
-Một vấn đề nhức nhối mà các lập trình viên gặp phải khi sử dụng DELEGATECALL là sự thay đổi trạng thái ngoài ý muốn, điều này xảy ra khi một hợp đồng được ủy quyền không hoạt động đúng cách hoặc các cửa hậu độc hại
+
+Một vấn đề nhức nhối mà các lập trình viên gặp phải khi sử dụng DELEGATECALL là sự thay đổi trạng thái ngoài ý muốn, điều này xảy ra khi một hợp đồng được ủy quyền không hoạt động đúng cách hoặc chứa các cửa hậu độc hại. Hệ quả là các lập trình viên trở nên nhát tay khi sử dụng DELEGATECALL, một số sử dụng CALL để thay thế, nhưng nó
+
+Các nhà phát triển phải nắm rõ những hạn chế cố hữu của module tích hợp này và dự phóng an toàn cho những vị trí mà module này không bảo vệ được. Chính vì những hạn chế như vậy mà tác giả khuyến nghị chỉ sử dụng chúng để bảo vệ những vị trí trọng yếu, chằng hạn như con trỏ proxy, chủ sở hữu, hoặc những vị trí được tuyên bố là bất biến dựa trên đặc tả ban đầu.

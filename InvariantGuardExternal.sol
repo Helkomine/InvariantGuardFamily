@@ -31,7 +31,11 @@ struct ValuePerPosition {
     uint256 delta;
 }  
 
-struct AddressInvariant {
+struct AccountInvariant {
+    address account;
+}
+
+struct TokenAddressInvariant {
     address tokenAddress;
 }
 
@@ -64,9 +68,9 @@ error InvariantViolationTransientStorage(ValuePerPosition[] transientStoragePerP
 
 error InvariantViolationExtETHBalanceArray(ValuePerPosition[] extETHBalancePerPosition);
 
-error InvariantViolationERC20BalanceArray(AddressInvariant[] addressInvariant, ValuePerPosition[] ERC20BalancePerPosition);
+error InvariantViolationERC20BalanceArray(TokenAddressInvariant[] addressInvariant, ValuePerPosition[] ERC20BalancePerPosition);
 
-error InvariantViolationERC721BalanceArray(AddressInvariant[] addressInvariant, ValuePerPosition[] ERC721BalancePerPosition);
+error InvariantViolationERC721BalanceArray(TokenAddressInvariant[] addressInvariant, ValuePerPosition[] ERC721BalancePerPosition);
 
 library InvariantGuardHelper {
     uint256 private constant MAX_PROTECTED_SLOTS  = 0xffff;

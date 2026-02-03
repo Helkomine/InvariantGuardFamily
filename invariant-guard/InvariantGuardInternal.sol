@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.20;
 import "./InvariantGuardHelper.sol";
+
 /**
  * @title InvariantGuardInternal
  * @author Helkomine (@Helkomine)
@@ -415,3 +416,4 @@ abstract contract InvariantGuardInternal {
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 }
+

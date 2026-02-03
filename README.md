@@ -1,5 +1,4 @@
 # INVARIANT-GUARD
-# Invariant Guard Library
 
 ## Overview
 This library provides invariant-based enforcement for:

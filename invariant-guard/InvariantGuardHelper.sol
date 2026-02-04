@@ -119,36 +119,52 @@ error InvariantViolationERC721OwnerArray(ERC721ArrayInvariant tokenERC721ArrayIn
  * @dev Contains reusable validation utilities for InvariantGuard variants
  */
 library InvariantGuardHelper {
+    /// @notice Maximum number of positions that can be protected in a single invariant check
     uint256 internal constant MAX_PROTECTED_SLOTS  = 0xffff;
 
-    // tạo mảng trống uint256
+    /**
+     * @notice Creates an empty uint256 array of given length
+     */
     function _emptyArray(uint256 length) internal pure returns (uint256[] memory) {
         return new uint256[](length);
     }
     
-    // Lấy kích thước mảng bytes32
+    /**
+     * @notice Returns the length of a bytes32 array
+     */
     function _getBytes32ArrayLength(bytes32[] memory bytes32Array) internal pure returns (uint256) {
         return bytes32Array.length;
     } 
 
-    // Lấy kích thước mảng uint256
+    /**
+     * @notice Returns the length of a uint256 array
+     */
     function _getUint256ArrayLength(uint256[] memory uint256Array) internal pure returns (uint256) {
         return uint256Array.length;
     }
 
-    // Lấy kích thước mảng address
+    /**
+     * @notice Returns the length of an address array
+     */
     function _getAddressArrayLength(address[] memory addressArray) internal pure returns (uint256) {
         return addressArray.length;
     }
 
-    // hoàn nguyên nếu kích thước quá lớn
+    /**
+     * @notice Reverts if the number of protected positions exceeds the allowed maximum
+     * @dev Prevents excessive gas usage and DoS vectors
+     */
     function _revertIfArrayTooLarge(uint256 numPositions) internal pure {
         if (numPositions > MAX_PROTECTED_SLOTS) revert ArrayTooLarge(numPositions, MAX_PROTECTED_SLOTS);
     }  
 
     /**
-     * @notice Validates a before/after delta using a DeltaRule
-     * @return True if the invariant holds, false otherwise
+     * @notice Checks whether a before/after value pair violates a delta constraint
+     * @param beforeValue Value before execution
+     * @param afterValue Value after execution
+     * @param expectedDelta Expected delta constraint
+     * @param deltaConstraint Delta constraint to apply
+     * @return True if the invariant is violated, false otherwise
      */
     function _isDeltaViolation(uint256 beforeValue, uint256 afterValue, uint256 expectedDelta, DeltaConstraint deltaConstraint) internal pure returns (bool) {
         if (deltaConstraint == DeltaConstraint.NO_CHANGE) {
@@ -189,9 +205,14 @@ library InvariantGuardHelper {
     }
 
     /**
-     * @notice Validates array-based invariants
+     * @notice Validates array-based delta invariants
+     * @dev Returns detailed per-position violations for invariant reporting
+     * @param beforeValueArray Snapshot before execution
+     * @param afterValueArray Snapshot after execution
+     * @param expectedDeltaArray Expected deltas per position
+     * @param deltaConstraint Delta constraint applied to all positions
      * @return violationCount Number of invariant violations
-     * @return violations Detailed per-position violations
+     * @return violations Detailed per-position invariant data
      */
     function _validateDeltaArray(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory expectedDeltaArray, DeltaConstraint deltaConstraint) internal pure returns (uint256, ValuePerPosition[] memory) {
         uint256 length = _getUint256ArrayLength(expectedDeltaArray);
@@ -211,7 +232,14 @@ library InvariantGuardHelper {
         return (violationCount, violations);
     }
     
-    // Xác minh địa chỉ trước và sau thực thi có bị thay đổi hay không, trả về giá trị violationCount > 0 nếu có
+    /**
+     * @notice Validates that address values remain unchanged between snapshots
+     * @dev Used for ownership or authority invariants
+     * @param beforeOwnerArray Address snapshot before execution
+     * @param afterOwnerArray Address snapshot after execution
+     * @return violationCount Number of detected address changes
+     * @return violations Detailed address changes per position
+     */
     function _validateAddressArray(address[] memory beforeOwnerArray, address[] memory afterOwnerArray) internal pure returns (uint256, AddressInvariant[] memory) {
         uint256 length = _getAddressArrayLength(afterOwnerArray);
         _revertIfArrayTooLarge(length);

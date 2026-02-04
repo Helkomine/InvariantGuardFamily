@@ -98,6 +98,7 @@ error InvariantViolationERC721BalanceArray(ERC721ArrayInvariant tokenERC721Array
 // Vi phạm bất biến chủ sở hữu dựa trên tokenId ERC721
 error InvariantViolationERC721OwnerArray(ERC721ArrayInvariant tokenERC721ArrayInvariant, ERC721TokenIdArray tokenIdERC721Array, AddressInvariant[] addressInvariantArray);
 
+// Thư viện logic cho Invariant Guard
 library InvariantGuardHelper {
     uint256 internal constant MAX_PROTECTED_SLOTS  = 0xffff;
 

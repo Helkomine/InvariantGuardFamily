@@ -2,7 +2,7 @@
 
 @author Helkomine (@Helkomine)
 
-Giúp việc thực hiện DELEGATECALL trở nên an toàn hơn
+Giúp việc thực hiện `DELEGATECALL` trở nên an toàn hơn
 
 ## Bối cảnh
 

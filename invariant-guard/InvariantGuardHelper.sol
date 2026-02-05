@@ -83,26 +83,31 @@ error InvalidDeltaConstraint(DeltaConstraint deltaConstraint);
 error ArrayTooLarge(uint256 length, uint256 maxLength);
 
 /// @notice Code hash invariant violation
+/// @custom:invariant code: contract bytecode hash must remain unchanged
 error InvariantViolationCode(CodeInvariant codeInvariant);
 
 /// @notice Nonce invariant violation
+/// @custom:invariant nonce: nonce must satisfy the configured delta constraint
 error InvariantViolationNonce(ValuePerPosition noncePerPosition);
 
 /// @notice Balance invariant violation
+/// @custom:invariant balance: contract ETH balance must satisfy the delta constraint
 error InvariantViolationBalance(ValuePerPosition balancePerPosition);
 
 /// @notice Storage invariant violation
+/// @custom:invariant storage: specified storage slots must satisfy the delta constraint
 error InvariantViolationStorage(ValuePerPosition[] storagePerPosition);
 
 /// @notice Transient storage invariant violation
+/// @custom:invariant tstorage: specified transient storage slots must satisfy the delta constraint
 error InvariantViolationTransientStorage(ValuePerPosition[] transientStoragePerPosition);
 
 /// @notice ETH balance invariant violation for external accounts
-/// @dev Thrown when ETH balances of specified external accounts violate invariants
+/// @custom:invariant external.eth: external account ETH balances must satisfy the delta constraint
 error InvariantViolationExtETHBalanceArray(AccountArrayInvariant accountArrayInvariant, ValuePerPosition[] extETHBalancePerPosition);
 
 /// @notice ERC20 balance invariant violation
-/// @dev Thrown when ERC20 balances of specified accounts violate invariants
+/// @custom:invariant erc20.balance: ERC20 balances must satisfy the delta constraint
 error InvariantViolationERC20BalanceArray(ERC20ArrayInvariant tokenERC20ArrayInvariant, AccountArrayInvariant accountArrayInvariant, ValuePerPosition[] ERC20BalancePerPosition);
 
 /// @notice ERC721 balance invariant violation

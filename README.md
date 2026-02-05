@@ -154,8 +154,7 @@ function executeFrame(bytes calldata bytecode) public {
         if (bytecode[i] == SELFDESTRUCT) {           
             if (isGuardGlobal || isGuardLocal) {
                 Set storage set = addressSet[address(this)];
-                assert(set.isAllowedCode);
-                assert(address(this).balance == 0 || set.isAllowedBalance);
+                assert(set.isAllowedCode);                
             }
         } else if (bytecode[i] == CREATE) {
             if (isGuardGlobal || isGuardLocal) {

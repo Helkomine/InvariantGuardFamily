@@ -120,6 +120,8 @@ error InvariantViolationERC721OwnerArray(ERC721ArrayInvariant tokenERC721ArrayIn
 
 /**
  * @title InvariantGuardHelper
+ * @author Helkomine (@Helkomine)
+ *
  * @notice Shared helper library for invariant validation logic
  * @dev Contains reusable validation utilities for InvariantGuard variants
  */

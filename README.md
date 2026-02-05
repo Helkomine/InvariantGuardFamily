@@ -148,11 +148,11 @@ function addAllowedSet(AddressSet[] calldata addressSet) public {
     }
 }
 function executeFrame(bytes calldata bytecode) public {
-    bool isGuardGlobal;
-    bool isGuardLocal;    
+    bool isPrevFrameGuard;
+    bool isFrameGuard;    
     for (uint256 i = 0 ; i < bytecode.length ; ++i) {
         if (bytecode[i] == SELFDESTRUCT) {           
-            if (isGuardGlobal || isGuardLocal) {
+            if (isPrevFrameGuard || isFrameLocal) {
                 Set storage set = addressSet[address(this)];
                 assert(set.isAllowedCode);                
             }

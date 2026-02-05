@@ -315,8 +315,8 @@ MutableSetList = List[MutableSet]
  Hành vi
   Khi bắt đầu giao dịch hãy khởi tạo hai cờ isPrevFrameGuard và isFrameGuard là false và tập hợp MutableSetList trống trên khung thực thi cao nhất. 
   Nếu khung thực thi hiện tại chuyển tiếp giao dịch xuống khung thực thi con thông qua các mã lệnh CALL, DELEGATECALL, CALLCODE, STATICCALL, CREATE và CREATE2, hãy chuyển tiếp giá trị isPrevFrameGuard và tập hợp MutableSetList trong khung thực thi hiện tại xuống khung thực thi con đồng thời đặt isFrameGuard là false trên khung thực thi con.
-  Nếu trong quá trình thực thi sử dụng mã lệnh `MUTABLE` hãy thực hiện các bước sau:
-   1. Khung thực thi PHẢI được hoàn nguyên nếu nó đang ở trong STATICCALL.
+  Nếu trong quá trình thực thi có sử dụng mã lệnh `MUTABLE` hãy thực hiện các bước sau:
+   1. Nếu isPrevFrameGuard là false.
    2.   
   Trong quá trình thực thi, hãy thực hiện các bước sau đây nếu isPrevFrameGuard hoặc isFrameGuard là true:
    Nếu khung thực thi gọi SELFDESTRUCT, PHẢI hoàn tác nếu isAllowedCode là false.

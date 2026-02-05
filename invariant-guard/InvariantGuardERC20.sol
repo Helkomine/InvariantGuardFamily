@@ -18,9 +18,6 @@ import "./InvariantGuardHelper.sol";
  * This design choice is intentional and accepted, as balance inspection requires
  * external calls by nature.
  *
- * The contract does NOT attempt to observe or validate external bytecode,
- * in order to remain compatible with the Ethereum EOF roadmap.
- *
  * Supported invariant categories:
  * - Balance invariants across one or more specified ERC20 tokens
  * - Balance invariants across one or more specified accounts

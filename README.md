@@ -57,4 +57,4 @@ các vị trí ngoài phạm vi chỉ định. Do vậy tác giả quyết đị
 
 Thông qua bản triển khai này tác giả hy vọng thúc đẩy một cuộc thảo luận nghiêm túc về vấn đề bảo vệ các bất biến trong quá trình thực thi, đặc biệt là mã lệnh `DELEGATECALL`. Điều này đặc biệt quan trọng trong bối cảnh Account Abstraction đang được thúc đẩy mạnh mẽ dẫn đến nhu cầu sử dụng tài khoản thông minh module ngày càng tăng, trong khi các nhà phát triển mong muốn sự an toàn và khả năng mở rộng không nên bị đánh đổi.
 
-Ngoài ra, nếu bạn phát hiện code có bất kỳ lỗi nào trong code : Lỗi logic, lỗi đặt tên, ... vui lòng gửi một pull request. Cảm ơn rất nhiều.
+Ngoài ra, nếu bạn phát hiện có bất kỳ lỗi nào trong code : Lỗi logic, lỗi đặt tên, ... vui lòng gửi một pull request. Cảm ơn rất nhiều.

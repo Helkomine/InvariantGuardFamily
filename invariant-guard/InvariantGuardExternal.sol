@@ -4,7 +4,8 @@ import "./InvariantGuardHelper.sol";
 
 /**
  * @title InvariantGuardExternal
-
+ * @author Helkomine (@Helkomine)
+ *
  * @notice Provides invariant protection for state external to the current contract
  *
  * @dev This contract enables invariant checks on external ETH balances

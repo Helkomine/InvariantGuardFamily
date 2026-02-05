@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 import "./InvariantGuardHelper.sol";
 
+// * @author Helkomine (@Helkomine) *
 // Hợp đồng này bảo vệ bất biến trên các token ERC20
 // Áp dụng giả định tin tưởng do thực hiện truy vấn bên
 // ngoài, vì vậy có thể phát sinh các tình huống không xác

@@ -16,7 +16,7 @@ A canonical example is the Parity multisig wallet incident, where an attacker in
 
 (Reference link to be added)
 
-Existing Mitigations and Their Limitations
+### Existing Mitigations and Their Limitations
 
 There have been attempts to mitigate these risks. One notable example is the introduction of explicit storage namespaces (ERC-7201), which aims to reduce layout collisions.
 However, such solutions primarily address storage layout assumptions and rely on the proxy delegating to a well-behaved logic contract. This implicitly assumes that there exists at least one “valid” execution path. In reality, layouts can still be broken, for example by unintentionally activating malicious logic embedded in a backdoored contract.
@@ -26,22 +26,32 @@ Some cautious teams have implemented pre- and post-execution value checks to red
 ## Motivation and Overview
 
 Based on these observations, the author originally introduced a complete implementation named Safe-Delegatecall, later renamed to Invariant-Guard to reflect a more ambitious goal:
+
 Not only controlling state changes caused by DELEGATECALL, but by any opcode or execution path that may alter critical invariants.
+
 This repository presents the first public Solidity implementation of Invariant-Guard. Feedback from the community is highly appreciated.
 The author is also preparing an EIP proposal to provide protocol-level invariant protection, enabling global guarantees that cannot be fully achieved at the contract level alone.
+
 (Note: the EIP draft is not yet available.)
-Usage Guide
+
+## Usage Guide
+
 Invariant-Guard currently provides four variants:
 InvariantGuardInternal
 InvariantGuardExternal
 InvariantGuardERC20
 InvariantGuardERC721
+
 If you are only interested in usage examples or prefer to read the implementation directly, please familiarize yourself with the design principles below to avoid confusion.
-Available Files
+
+### Available Files
+
 There are five Invariant-Guard files in total:
 Four functional implementations (listed above)
 One shared helper library: InvariantGuardHelper
-Core Mechanism
+
+### Core Mechanism
+
 Invariant-Guard works by:
 Taking snapshots of selected values before execution
 Executing the target logic
@@ -59,6 +69,7 @@ The value may change, but only within a predefined threshold configuration.
 Based on the nature of state differences, invariants are further divided into eight groups.
 Note:
 Example implementations are not yet provided, so usage guidance for certain cases—especially Storage and Transient Storage—will be refined in future revisions.
+
 ## Security Considerations
 
 ⚠️ Important:

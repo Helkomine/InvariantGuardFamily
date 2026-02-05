@@ -22,7 +22,7 @@ Hiện tại Invariant-Guard đang có bốn phiên bản là InvariantGuardInte
 
 ### Các file khả dụng 
 
-Có tất cả năm file InvariantGuard, bốn trong số đó chứa mã chức năng với tên gọi như được nêu trên, file còn lại là một helper.
+Có tất cả năm file InvariantGuard, bốn trong số đó chứa mã chức năng với tên gọi như được nêu trên, file còn lại là một helper với tên InvariantGuardHelper.
 
 ### Giải thích cơ chế
 

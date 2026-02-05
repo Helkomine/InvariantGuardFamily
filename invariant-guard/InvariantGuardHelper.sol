@@ -76,7 +76,7 @@ error LengthMismatch();
 /// @notice Invariant category is not supported
 error UnsupportedInvariant();  
 
-/// @notice Invalid or unsupported DeltaRule
+/// @notice Invalid or unsupported DeltaConstraint
 error InvalidDeltaConstraint(DeltaConstraint deltaConstraint);
 
 /// @notice Too many slots requested for invariant protection

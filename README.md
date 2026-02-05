@@ -147,4 +147,23 @@ function addAllowedSet(AddressSet[] calldata addressSet) public {
         }
     }
 }
+function executeFrame(bytes calldata bytecode) public {
+    Set storage set = addressSet[address(this)];
+    for (uint256 i = 0 ; i < bytecode.length ; ++i) {
+        if (bytecode[i] == SELFDESTRUCT) {           
+            assert(set.isAllowedAddress);
+            assert(set.isAllowedCode);
+            assert(address(this).balance == 0 || set.isAllowedBalance);
+        } else if (bytecode[i] == CREATE) {
+            assert(set.isAllowedAddress);
+            assert(set.isAllowedNonce);
+        } else if (bytecode[i] == CREATE2) {
+            assert(set.isAllowedAddress);
+            assert(set.isAllowedNonce);
+        } else if (bytecode[i] == CALL) {
+            assert(set.isAllowedAddress);
+            assert(set.isAllowedBalance);
+        }
+    }
+}
 ```
